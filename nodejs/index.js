@@ -21,6 +21,7 @@ const PORT = 3000;
 
 app.use((req, res, next) => {
   req.db = database;
+  // console.log(database);
   next();
 });
 

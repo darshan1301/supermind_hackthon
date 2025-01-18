@@ -2,36 +2,14 @@ const bcrypt = require("bcrypt");
 const { generateToken } = require("../utils/auth.js");
 const { v4: uuidv4 } = require("uuid");
 
-const createTablesIfNotExist = async (db) => {
+const initializeCollections = async (db) => {
   try {
-    // Astra DB / Cassandra table creation
-    const createTableQuery = `
-      CREATE TABLE IF NOT EXISTS users (
-        user_id uuid PRIMARY KEY,
-        name text,
-        date_of_birth text,
-        time_of_birth text,
-        gender text,
-        state text,
-        city text,
-        email text,
-        password text,
-        created_at timestamp,
-        updated_at timestamp
-      );
-    `;
-    await db.execute(createTableQuery);
-
-    // Create an index on email for efficient lookups
-    const createIndexQuery = `
-      CREATE INDEX IF NOT EXISTS users_email_idx ON users (email);
-    `;
-    await db.execute(createIndexQuery);
-
-    console.log("Table 'users' and indices created successfully.");
+    // Create users collection if it doesn't exist
+    await db.createCollection("users");
+    console.log("Users collection initialized successfully");
   } catch (error) {
-    console.error("Error creating table or index:", error);
-    throw error;
+    // Collection might already exist
+    console.log("Collection initialization status:", error.message);
   }
 };
 
@@ -48,15 +26,15 @@ const userSignup = async (req, res) => {
   } = req.body;
 
   try {
-    await createTablesIfNotExist(req.db);
+    const database = req.db;
+    await initializeCollections(database);
+
+    const usersCollection = database.collection("users");
 
     // Check if email exists
-    const checkEmailQuery = `SELECT email FROM users WHERE email = ? ALLOW FILTERING`;
-    const existingUser = await req.db.execute(checkEmailQuery, [email], {
-      prepare: true,
-    });
+    const existingUser = await usersCollection.findOne({ email: email });
 
-    if (existingUser.rowLength > 0) {
+    if (existingUser) {
       return res.status(400).json({ message: "Email already exists." });
     }
 
@@ -64,32 +42,23 @@ const userSignup = async (req, res) => {
     const userId = uuidv4();
     const currentTime = new Date().toISOString();
 
-    // Insert new user
-    const insertQuery = `
-      INSERT INTO users (
-        user_id, name, date_of_birth, time_of_birth, gender, 
-        state, city, email, password, created_at, updated_at
-      )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
-    `;
+    // Create new user document
+    const newUser = {
+      _id: userId,
+      name,
+      date_of_birth: dateOfBirth,
+      time_of_birth: timeOfBirth,
+      gender,
+      state,
+      city,
+      email,
+      password: hashedPassword,
+      created_at: currentTime,
+      updated_at: currentTime,
+    };
 
-    await req.db.execute(
-      insertQuery,
-      [
-        userId,
-        name,
-        dateOfBirth,
-        timeOfBirth,
-        gender,
-        state,
-        city,
-        email,
-        hashedPassword,
-        currentTime,
-        currentTime,
-      ],
-      { prepare: true }
-    );
+    // Insert the user
+    await usersCollection.insertOne(newUser);
 
     const token = generateToken(userId);
     res.status(201).json({ token });
@@ -103,16 +72,18 @@ const userLogin = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const query = `SELECT * FROM users WHERE email = ? ALLOW FILTERING`;
-    const result = await req.db.execute(query, [email], { prepare: true });
+    const database = req.db;
+    const usersCollection = database.collection("users");
 
-    if (result.rowLength === 0) {
+    // Find user by email
+    const user = await usersCollection.findOne({ email: email });
+
+    if (!user) {
       return res.status(404).json({
         message: "User not found. Please check your email and try again.",
       });
     }
 
-    const user = result.rows[0];
     const isPasswordMatch = await bcrypt.compare(password, user.password);
 
     if (!isPasswordMatch) {
@@ -121,7 +92,7 @@ const userLogin = async (req, res) => {
       });
     }
 
-    const token = generateToken(user.user_id);
+    const token = generateToken(user._id);
     res.status(200).json({ token, message: "Login successful" });
   } catch (error) {
     console.error("Error during user login:", error);
@@ -133,14 +104,16 @@ const getUserInfo = async (req, res) => {
   const userId = req.user.userId;
 
   try {
-    const query = `SELECT * FROM users WHERE user_id = ?`;
-    const result = await req.db.execute(query, [userId], { prepare: true });
+    const database = req.db;
+    const usersCollection = database.collection("users");
 
-    if (result.rowLength === 0) {
+    // Find user by ID
+    const user = await usersCollection.findOne({ _id: userId });
+
+    if (!user) {
       return res.status(404).json({ message: "User not found!" });
     }
 
-    const user = result.rows[0];
     const { password, ...userInfo } = user;
     res.status(200).json({ user: userInfo });
   } catch (error) {
@@ -156,39 +129,30 @@ const updateUserInfo = async (req, res) => {
   // Remove sensitive fields from update data
   delete updateData.password;
   delete updateData.email;
-  delete updateData.user_id;
+  delete updateData._id;
 
   try {
-    // Construct dynamic update query based on provided fields
-    const updateFields = Object.keys(updateData)
-      .map((field) => `${field} = ?`)
-      .join(", ");
+    const database = req.db;
+    const usersCollection = database.collection("users");
 
-    if (!updateFields) {
-      return res.status(400).json({ message: "No valid fields to update" });
+    // Add updated timestamp
+    updateData.updated_at = new Date().toISOString();
+
+    // Update the user document
+    const result = await usersCollection.updateOne(
+      { _id: userId },
+      { $set: updateData }
+    );
+
+    if (result.modifiedCount === 0) {
+      return res
+        .status(404)
+        .json({ message: "User not found or no changes made" });
     }
 
-    const query = `
-      UPDATE users 
-      SET ${updateFields}, updated_at = ? 
-      WHERE user_id = ?
-    `;
-
-    const values = [
-      ...Object.values(updateData),
-      new Date().toISOString(),
-      userId,
-    ];
-
-    await req.db.execute(query, values, { prepare: true });
-
     // Verify the update
-    const checkQuery = `SELECT * FROM users WHERE user_id = ?`;
-    const result = await req.db.execute(checkQuery, [userId], {
-      prepare: true,
-    });
-
-    if (result.rowLength === 0) {
+    const updatedUser = await usersCollection.findOne({ _id: userId });
+    if (!updatedUser) {
       return res.status(404).json({ message: "User not found" });
     }
 
