@@ -2,6 +2,7 @@ const { connectToAstraDB } = require("./astraDB/astraDB.js");
 const userRoute = require("./routes/userRoute.js");
 const chatBotRoute = require("./routes/chatBotRoute.js");
 const kundaliRoute = require("./routes/kundaliRoute.js");
+const cors = require("cors");
 
 require("dotenv").config();
 
@@ -18,6 +19,9 @@ try {
 const express = require("express");
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+app.use(cors());
+app.use(express.json({ limit: "1mb" }));
 
 app.use((req, res, next) => {
   req.db = database;
