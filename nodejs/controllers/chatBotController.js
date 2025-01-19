@@ -3,6 +3,7 @@ configDotenv();
 
 async function handleUserInput(req, res) {
   const APPLICATION_TOKEN = process.env.APPLICATION_TOKEN;
+  console.log(req.body);
   try {
     const response = await fetch(
       "https://api.langflow.astra.datastax.com/lf/bdbc0ac6-008b-4cfd-ba3c-563572f1746f/api/v1/run/517a2e9d-faf4-4e3a-a02d-4a010e9aacf6?stream=false",
