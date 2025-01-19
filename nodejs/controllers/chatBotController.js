@@ -18,6 +18,7 @@ async function handleUserInput(req, res) {
           output_type: "chat",
           input_type: "chat",
         }),
+        timeout: 15000, // Set a timeout for the request (15 seconds)
       }
     );
 

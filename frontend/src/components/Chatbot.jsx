@@ -7,8 +7,7 @@ import {
   Paperclip,
   Smile,
 } from "lucide-react";
-import postChatMessage from "../services/chatbot";
-
+import { postChatMessage } from "../services/chat.js";
 const ChatBot = () => {
   const [messages, setMessages] = useState([]);
   const [userInput, setUserInput] = useState("");
