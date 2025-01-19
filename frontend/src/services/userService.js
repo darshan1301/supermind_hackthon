@@ -22,8 +22,17 @@ export async function signUp(data) {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(data),
+      body: JSON.stringify({
+        name: data.name,
+        email: data.email,
+        password: data.password,
+        dob: data.dob,
+        city: data.city,
+        gender: data.gender,
+        state: data.state,
+      }),
     });
+    console.log(response);
     return response;
   } catch (error) {
     console.log(error);

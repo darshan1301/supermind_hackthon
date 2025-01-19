@@ -1,17 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
-const KundaliChart = ({ birthdate }) => {
+const KundaliChart = () => {
   const [kundali, setKundali] = useState(null);
   const [error, setError] = useState(null);
-  const url = `http://localhost:3000/generateKundali?birthdate=${birthdate}`;
   useEffect(() => {
     const fetchKundali = async () => {
       try {
         const response = await axios.get(url);
         setKundali(response.data);
       } catch (err) {
-        setError('Error fetching Kundali data');
+        setError("Error fetching Kundali data");
       }
     };
 
@@ -30,7 +29,9 @@ const KundaliChart = ({ birthdate }) => {
 
   return (
     <div className="text-center mt-12">
-      <h2 className="text-3xl font-semibold mb-4">Kundali Chart for Birthdate: {birthdate}</h2>
+      <h2 className="text-3xl font-semibold mb-4">
+        Kundali Chart for Birthdate: {birthdate}
+      </h2>
       <div className="text-xl font-medium mb-6">
         <h3>Life Path Number: {kundali.lifePathNumber}</h3>
       </div>

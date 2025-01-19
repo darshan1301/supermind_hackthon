@@ -10,7 +10,7 @@ export async function postChatMessage(message) {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ message }),
+      body: JSON.stringify({ input_value: message }),
     });
     const data = await response.json();
     if (data) {

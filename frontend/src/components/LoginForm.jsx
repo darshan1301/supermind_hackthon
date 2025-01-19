@@ -4,6 +4,7 @@ import { Label } from "@radix-ui/react-label";
 import clsx from "clsx";
 import { login } from "../services/userService";
 import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const LoginForm = () => {
   const {
@@ -11,6 +12,8 @@ const LoginForm = () => {
     handleSubmit,
     formState: { errors },
   } = useForm();
+
+  const navigate = useNavigate();
 
   const { setToken } = useAuth();
 
@@ -21,6 +24,7 @@ const LoginForm = () => {
         const { token } = await res.json();
         console.log(res);
         setToken(token);
+        navigate("/");
       }
     } catch (error) {
       console.log(error);

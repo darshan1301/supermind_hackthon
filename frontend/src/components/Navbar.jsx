@@ -1,12 +1,22 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import { NavigationMenu, NavigationMenuList, NavigationMenuItem } from "@radix-ui/react-navigation-menu";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  NavigationMenu,
+  NavigationMenuList,
+  NavigationMenuItem,
+} from "@radix-ui/react-navigation-menu";
 import clsx from "clsx";
-import { useGlobalContext } from "../context/Context";
+import { useAuth } from "../context/AuthContext";
 
 const Navbar = () => {
-  const { user } = useGlobalContext();
+  const { isAuthenticated, clearToken, jwtToken } = useAuth();
+  const navigate = useNavigate();
 
+  function handleLogout() {
+    clearToken();
+    localStorage.removeItem("jwtToken");
+    navigate("/login");
+  }
   return (
     <nav className="bg-gray-900 text-white py-4">
       <div className="container mx-auto flex justify-between items-center">
@@ -22,7 +32,7 @@ const Navbar = () => {
                 Home
               </Link>
             </NavigationMenuItem>
-            {user ? (
+            {jwtToken ? (
               <>
                 <NavigationMenuItem>
                   <Link to="/Kundli" className={clsx("hover:text-gray-300")}>
@@ -33,6 +43,9 @@ const Navbar = () => {
                   <Link to="/Horoscope" className={clsx("hover:text-gray-300")}>
                     Horoscope
                   </Link>
+                </NavigationMenuItem>
+                <NavigationMenuItem>
+                  <button onClick={handleLogout}>Logout</button>
                 </NavigationMenuItem>
               </>
             ) : (
