@@ -1,4 +1,3 @@
-import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   NavigationMenu,
@@ -9,7 +8,7 @@ import clsx from "clsx";
 import { useAuth } from "../context/AuthContext";
 
 const Navbar = () => {
-  const { isAuthenticated, clearToken, jwtToken } = useAuth();
+  const { clearToken, jwtToken } = useAuth();
   const navigate = useNavigate();
 
   function handleLogout() {

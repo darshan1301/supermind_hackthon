@@ -1,9 +1,7 @@
-import React, { useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import ChatBot from "../components/ChatBot";
-import { useAuth } from "../context/AuthContext";
-import { use } from "react";
+import ChatBot from "../components/Chatbot";
+import { useEffect } from "react";
 
 const ChatPage = () => {
   const navigate = useNavigate();

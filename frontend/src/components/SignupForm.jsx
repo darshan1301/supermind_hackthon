@@ -1,12 +1,11 @@
 import { useForm } from "react-hook-form";
 import { Label } from "@radix-ui/react-label";
 import clsx from "clsx";
-import { useGlobalContext } from "../context/Context";
 import { signUp } from "../services/userService";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 const SignupForm = () => {
-  const { isAUthenticated, setToken } = useAuth();
+  const { setToken } = useAuth();
   const {
     register,
     handleSubmit,

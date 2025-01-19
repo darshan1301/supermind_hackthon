@@ -1,13 +1,8 @@
 import { useState, useRef, useEffect } from "react";
-import {
-  Send,
-  MoreVertical,
-  CheckCheck,
-  Image,
-  Paperclip,
-  Smile,
-} from "lucide-react";
+import { Send, MoreVertical, Image, Paperclip, Smile } from "lucide-react";
+
 import { postChatMessage } from "../services/chat.js";
+
 const ChatBot = () => {
   const [messages, setMessages] = useState([]);
   const [userInput, setUserInput] = useState("");
@@ -88,17 +83,6 @@ const ChatBot = () => {
     fetchInitialMessages();
   }, []);
 
-  const MessageStatus = ({ status }) => {
-    switch (status) {
-      case "read":
-        return <CheckCheck className="h-4 w-4 text-blue-500" />;
-      case "delivered":
-        return <CheckCheck className="h-4 w-4 text-gray-500" />;
-      default:
-        return null;
-    }
-  };
-
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)] bg-gray-900 text-gray-100">
       {/* Header */}
@@ -138,7 +122,6 @@ const ChatBot = () => {
                 <span className="text-xs opacity-70 text-gray-400">
                   {formatTime(msg.timestamp)}
                 </span>
-                {msg.sender === "user" && <MessageStatus status={msg.status} />}
               </div>
             </div>
           </div>

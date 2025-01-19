@@ -1,4 +1,3 @@
-import React from "react";
 import { useForm } from "react-hook-form";
 import { Label } from "@radix-ui/react-label";
 import clsx from "clsx";
