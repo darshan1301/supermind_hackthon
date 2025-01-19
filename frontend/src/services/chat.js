@@ -18,9 +18,8 @@ export async function postChatMessage(message) {
     }
 
     const data = await response.json();
-    console.log(data, response);
 
-    return data || null;
+    return data.message;
   } catch (error) {
     console.error("Error:", error);
     return error;

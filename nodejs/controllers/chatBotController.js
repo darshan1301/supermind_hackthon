@@ -30,7 +30,7 @@ async function handleUserInput(req, res) {
     const message =
       data["outputs"][0]["outputs"][0]["results"]["message"]["text"];
 
-    res.send(message);
+    res.status(200).send({ message });
   } catch (error) {
     console.error(error);
     res.status(500).send("Internal Server Error");

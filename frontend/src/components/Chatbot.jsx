@@ -41,7 +41,7 @@ const ChatBot = () => {
 
       const botReply = {
         sender: "bot",
-        text: response.data, // Assuming response.data contains the bot's reply
+        text: response, // Assuming response.data contains the bot's reply
         timestamp: new Date(),
         status: "delivered",
       };
