@@ -1,4 +1,4 @@
-export const BASE_URL = "https://supermind-hackthon-4a9r.onrender.com";
+export const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 export async function login(data) {
   try {
